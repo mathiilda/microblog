@@ -2,6 +2,7 @@
 app.db
 aws_keys.yml
 logs/
+README_COMMANDS.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
