@@ -13,7 +13,7 @@ jobs:
             . venv/bin/activate
             sudo pip install pylint
             make install-test
-            apt-get install python3-venv
+            sudo apt-get install python3-venv
       - run:
           name: run tests
           command: |
