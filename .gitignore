@@ -3,6 +3,7 @@ app.db
 aws_keys.yml
 logs/
 README_COMMANDS.md
+old_config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
