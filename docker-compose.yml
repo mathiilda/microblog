@@ -8,12 +8,16 @@ services:
       MYSQL_DATABASE: microblog
       MYSQL_PASSWORD: secret
     restart: "unless-stopped"
+    expose:
+      - 3306
 
   prod:
     container_name: "microblog"
     image: mathilda17/microblog:latest
     ports:
       - "8000:5000"
+    depends_on:
+      - "dbserver"
     environment:
       - SECRET_KEY=development
       - DATABASE_URL=mysql+pymysql://microblog:secret@dbserver:3306/microblog
@@ -24,6 +28,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile_test.dockerfile
     container_name: microblog_test
+    depends_on:
+      - "dbserver"
     ports:
       - "8000:5000"
     volumes:
