@@ -8,8 +8,6 @@ services:
       MYSQL_DATABASE: microblog
       MYSQL_PASSWORD: secret
     restart: "unless-stopped"
-    expose:
-      - 3306
 
   prod:
     container_name: "microblog"
