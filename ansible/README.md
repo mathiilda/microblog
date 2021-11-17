@@ -23,7 +23,7 @@ To destroy instances use `ansible-playbook terminate_instances.yml`.
 
 #### Playbooks
 
-We have 4 playbooks provision_instances, terminate_instances, gather__instances, site.
+We have 4 playbooks `provision_instances`, `terminate_instances`, `gather_vm_instances`, `site`.
 
 **provision_instances** is used to create 3 servers on Azure together with their respective security groups, network settings and storage.   
 It Uses the roles provision_instances that waits for all of the security_groups to be created. It also connects the load balancers ip to your domain name.
@@ -61,6 +61,8 @@ eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/azure
 ```
 
+
+
 #### Azure
 
 You need credentials from Azure to allow Ansible to manage servers. 
@@ -74,7 +76,6 @@ The file should look like the following:
 ad_user=<acronym>@student.bth.se
 password=<password>
 subscription_id=<XXxxxxXX-XxxX-XxxX-XxxX-XXxxxXXXxxXX>
-tenant=<yyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy>
 ```
 
 Replace `acronym` with your student acronym. The `password` should be the same you use to login in to azure. Your `subscription_id` can be found inside the *Information* box when overlooking your resource group on the website.
@@ -85,8 +86,9 @@ The environmental variables uses the same values but slightly different keys:
 export AZURE_AD_USER='acronym@student.bth.se'
 export AZURE_PASSWORD='<password>'
 export AZURE_SUBSCRIPTION_ID='<XXxxxxXX-XxxX-XxxX-XxxX-XXxxxXXXxxXX>'
-export AZURE_TENANT=`<yyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy>`
 ```
+
+
 
 #### Ansible vault
 
@@ -103,7 +105,10 @@ EOF
 
 Create a new ENV variable with the path to the password file, `ANSIBLE_VAULT_PASSWORD_FILE=<path-to-file>`.
 
-Can now use `ansible-vault decrypt` and `ansible-vault encrypt` without typing password.
+Can now use `ansible-vault decrypt` and `ansible-vault encrypt` without typing password. Once you have enrypted a file and want to update it, you can use the command `ansible-vault edit`. It will decrypt the file, open teh file and when you close the file it will encrypt the file again.
+
+
+##### Encrypted file on CircleCi
 
 To create the decryption file on **CircleCI**, add an env variable and `echo` its value into a `.txt` file.
 
@@ -113,7 +118,9 @@ Example:
     name: Prepare the password file
     command: echo "$VALUT_PASS" > ~/project/ansible/.vault_password.txt
 ```
+
 When you want to run the playbooks:
+
 ```yml
 - run:
     name: Decrypt files and run playbooks
@@ -154,7 +161,7 @@ ssh_args =
 
 If you then get an error about "ssh and ControlSocket/permission denied for cp/ssh" add it again. You can read about the problem here, https://stackoverflow.com/a/41698903. There are supposed to be fixes for it but i can't get them to work.
 
-You can also try to uncomment the line `# pipelining                  = True` to see if it still works. If it works Ansible should be faster.
+You can also try to add the line `pipelining                  = True`, last in the file, to see if it still works. If it works Ansible should be faster.
 
 
 
@@ -181,11 +188,41 @@ When we run local plays we also need to change which Python interpreter should b
 
 
 ### Debugging and testing something out
+
+#### Check syntax
+
+When you are developing it is rekommended to check the syntax of your code before you run the playbook. Otherwise you might manage to execute half the playbook before you encounter an error because of your syntax.
+
+`ansible-playbook <playbook>.yml --syntax-check`
+
+Syntax-check does not execute the playbook.
+
+
+
+#### Print a value
+
 Sometime you just want to test something, check value of a variable. You can do that with the following:
 
-`ansible -m debug -a msg="{{playbook_dir}}" local`
+`ansible -m debug -a msg="{{ variable }}" local`
 
-Just replace `msg=""` with that you want to check. Examples of how this can be used inside a *playbook* can be found in the `provision_instances` tasks.
+Just replace `msg=""` with that you want to check.
+
+You can also print the value of a variable in a playbook.
+
+```
+tasks:
+    - name ...
+        ....
+      register: foo
+
+    - debug: var=foo
+```
+
+Examples of how this can be used inside a *playbook* can be found in the `provision_instances` tasks.
+
+
+
+#### More verbose error messages
 
 Use the `--verbose, -v` flag to enable verbose output for better debugging possibilities.   
 Ansible has different stages of verbose, `-v` is for basic debugging, `-vvv` shows even more information and `-vvvv` enables connection debugging.
@@ -194,6 +231,10 @@ Example:
 ```bash
 $ ansible-playbook site.yml -vvv
 ```
+
+
+
+### Known Errors
 
 #### Encoding Error
 
@@ -218,17 +259,3 @@ File \"microblog/venv/lib/python3.5/site-packages/boto/rds2/layer1.py\", line 15
 Open the file `venv/lib/python3.5/site-packages/boto/rds2/layer1.py` and go to line 3779 (this can change), look for the line `return json.loads(body)`. Add a new line before that one with `body = response.read().decode('utf-8')`.
 
 You can read about the error here, https://github.com/boto/boto/issues/2677.
-
-#### Missing Modules
-When you run a playbook after the time you install you dependencies, you might get an error pointing towards missing modules.
-
-This is due to ether, one of our dependencies not being installed correctly or that you are running a non-compatible ansible version.
-
-To fix this do the following:
-1. Deactivate your `venv` and remove the folder.
-2. Recreate it `python -m venv venv` and source it.
-3. Reinstall the deploy dependencies `make install-deploy`.
-
-If you do not have access to the `make` commands, install the dependencies normally `pip install -r requirements/deploy.txt`, followed by `pip install 'ansible[azure]'`.
-
-The root cause of this issue is that we have a module called `ansible[azure]` in our `deploy.txt` file. This can in most cases be ignored and not installed when using the `pip install -r` command. This package contains a version based list of dependencies in which ansible needs to use when working with Azure.
