@@ -100,8 +100,8 @@ validate:
 # target: validate-docker              - Validate Dockerfile with hadolint
 .PHONY: validate-docker
 validate-docker:
-	@docker run --rm -i hadolint/hadolint < docker/Dockerfile_prod.dockerfile
-	@docker run --rm -i hadolint/hadolint < docker/Dockerfile_test.dockerfile
+	@docker run --rm -i hadolint/hadolint < docker/Dockerfile_prod
+	@docker run --rm -i hadolint/hadolint < docker/Dockerfile_test
 
 
 
@@ -210,14 +210,8 @@ install-test:
 
 
 
-# target: install-deploy                 - Install all Python packages specified in requirements/{deploy.txt}
+# target: install-deploy                 - Install all Python packages specified in requirements/{deploy.txt} and ansible galaxy collections in ansible/requirements.yml
 .PHONY: install-deploy
 install-deploy:
 	${pip} install -r requirements/deploy.txt
-	@${pip} install ansible[azure]
-
-
-#target: make test-docker								- Run test image
-.PHONY: test-docker
-test-docker:
-	docker-compose up test
+	cd ansible && ansible-galaxy install -r requirements.yml
