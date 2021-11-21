@@ -1,0 +1,78 @@
+---
+- name: Database
+  hosts: database
+  become: true
+  become_method: sudo
+  remote_user: deploy
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: Update the apt package
+      become: yes
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+        force_apt_get: yes
+
+    - name: Install packages
+      become: yes
+      apt:
+        name: "{{ packagesdep }}"
+        force_apt_get: yes
+        state: latest
+        update_cache: yes
+      vars:
+        packagesdep:
+          - git
+          - apt-transport-https
+          - ca-certificates
+          - wget
+          - software-properties-common
+          - gnupg2
+          - curl
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+
+    - name: Add Apt key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Debian Stretch, official repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
+        state: present
+
+    - name: Add new repo to cache
+      become: yes
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+        force_apt_get: yes
+
+    - name: Install docker
+      apt:
+        name: "docker-ce"
+        state: latest
+
+    - name: Install Docker for Python
+      pip:
+        name: docker
+
+    - name: Create db container
+      docker_container:
+        name: dbserver
+        image: "mysql:5.7"
+        restart: true
+        ports:
+          - "3306:3306"
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: microblog
+          MYSQL_USER: microblog
+          MYSQL_PASSWORD: secret
