@@ -40,8 +40,8 @@ jobs:
           paths:
             - ./image.tar
       - run:
-        name: run ansible script
-        command: ansible-playbook ansible/gather_vm_instances.yml ansible/loadBalancer.yml
+          name: run ansible script
+          command: ansible-playbook ansible/gather_vm_instances.yml ansible/loadBalancer.yml
   publish-latest:
     executor: docker-publisher
     steps:
