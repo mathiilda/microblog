@@ -20,6 +20,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             sudo pip install pylint
+            sudo pip install ansible
             make install-test
             make install-deploy
       - run:
@@ -41,7 +42,7 @@ jobs:
             - ./image.tar
       - run:
           name: run ansible script
-          command: ansible-playbook ansible/gather_vm_instances.yml ansible/loadBalancer.yml
+          command: ansible-playbook ansible/gather_vm_instances.yml ansible/appServer.yml
   publish-latest:
     executor: docker-publisher
     steps:
