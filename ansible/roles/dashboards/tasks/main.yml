@@ -1,0 +1,45 @@
+# Dashboarden är utkommenterad då den endast skapar en tom template och inga grafer visas.
+# Jag har lagt in json-schemat manuellt. Vad jag kunde se i discord chatten så var det okej.
+#
+# - name: Create Grafana flask dashboard
+#   community.grafana.grafana_dashboard:
+#     grafana_url: http://52.178.132.42:3000/
+#     state: present
+#     overwrite: yes
+#     path: https://gist.githubusercontent.com/AndreasArne/433f902f9b986c301f2b2877454a581f/raw/4898bb2013b469cf74ace82d2d5aa39e073cb069/flaskdash.json
+
+- name: Copy mysql file
+  copy:
+    src: files/mysql.json
+    dest: /tmp/mysql.json
+
+- name: Create Grafana mysql dashboard
+  community.grafana.grafana_dashboard:
+    grafana_url: http://52.178.132.42:3000/
+    state: present
+    overwrite: yes
+    path: /tmp/mysql.json
+
+- name: Copy node-exporter file
+  copy:
+    src: files/node_exporter.json
+    dest: /tmp/node_exporter.json
+
+- name: Create Grafana node-exporter dashboard
+  community.grafana.grafana_dashboard:
+    grafana_url: http://52.178.132.42:3000/
+    state: present
+    overwrite: yes
+    path: /tmp/node_exporter.json
+
+- name: Copy nginx file
+  copy:
+    src: files/nginx.json
+    dest: /tmp/nginx.json
+
+- name: Create Grafana nginx dashboard
+  community.grafana.grafana_dashboard:
+    grafana_url: http://52.178.132.42:3000/
+    state: present
+    overwrite: yes
+    path: /tmp/nginx.json

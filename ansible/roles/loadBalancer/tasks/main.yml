@@ -1,0 +1,70 @@
+- name: Install packages
+  apt:
+    name:
+      - nginx
+      - python-certbot-nginx
+    state: present
+
+- name: Check if certificate already exists.
+  stat:
+    path: /etc/letsencrypt/live/mbweb.tech/cert.pem
+  register: letsencrypt_cert
+
+- debug: msg="{{ letsencrypt_cert.stat.exists }}"
+
+- name: Stop services to allow certbot to generate a cert.
+  command: service nginx stop
+  when: not letsencrypt_cert.stat.exists
+
+- name: Generate new certificate if one doesn't exist.
+  shell: "certbot certonly --standalone --noninteractive --expand --agree-tos --email mabw19@student.bth.se -d mbweb.tech -d www.mbweb.tech"
+  when: not letsencrypt_cert.stat.exists
+
+- name: Remove default conf
+  file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+
+- name: Copy files from local to VM, nginx.conf.j2
+  template:
+    src: ~/dbwebb/nginx-conf/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: Copy files from local to VM, load-balancer.conf.j2
+  template:
+    src: ~/dbwebb/nginx-conf/load-balancer.conf.j2
+    dest: /etc/nginx/sites-available/load-balancer.conf
+
+- name: Create symbolic link
+  file:
+    state: link
+    src: /etc/nginx/sites-available/load-balancer.conf
+    path: /etc/nginx/sites-enabled/load-balancer.conf
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+
+- name: Run nginx-exporter
+  docker_container:
+    name: "nginx-exporter"
+    image: nginx/nginx-prometheus-exporter:0.4.2
+    pull: yes
+    state: started
+    restart_policy: always
+    ports:
+      - "9113:9113"
+    command:
+      - "-nginx.scrape-uri=https://mbweb.tech/metrics"
+      - "-nginx.retries=10"
+      - "-nginx.ssl-verify=false"
+      - "-web.telemetry-path=/prometheus"
+
+- name: Restart nginx
+  command: sudo service nginx reload
+# - name: Restart nginx
+#   service:
+#     name: nginx
+#     state: restarted
+#     enabled: yes

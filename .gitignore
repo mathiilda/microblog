@@ -6,6 +6,8 @@ README_COMMANDS.md
 old_config.yaml
 loadBalancer-copy.yml
 ansible/group_vars/devops.yml
+ansible/group_vars/all.yml
+ansible/roles/prometheus_copy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

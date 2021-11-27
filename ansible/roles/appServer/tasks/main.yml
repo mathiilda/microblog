@@ -1,0 +1,13 @@
+- name: Run microblog container
+  docker_container:
+    name: microblog
+    state: started
+    image: "mathilda17/microblog:flask-exporter"
+    pull: true
+    ports:
+      - 8000:5000
+    env:
+      MYSQL_HOST: "{{ groups.database[0] }}"
+      SECRET_KEY: secret
+      DATABASE_URL: "mysql+pymysql://microblog:secret@{{ groups.database[0] }}:3306/microblog"
+      container_default_behavior: "compatibility"

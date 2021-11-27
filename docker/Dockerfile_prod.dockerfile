@@ -8,6 +8,7 @@ COPY app app
 COPY migrations migrations
 COPY requirements requirements
 COPY requirements.txt microblog.py boot.sh ./
+COPY gunicorn_config.py gunicorn_config.py
 
 # hadolint ignore=DL3013,DL3018
 RUN apk --no-cache add --virtual build-dependencies libffi-dev openssl-dev py-pip build-base \
@@ -23,6 +24,8 @@ RUN chmod +x boot.sh
 
 RUN chown -R microblog:microblog ./
 USER microblog
+
+ENV prometheus_multiproc_dir /tmp
 
 EXPOSE 5000
 ENTRYPOINT ["sh", "./boot.sh"]

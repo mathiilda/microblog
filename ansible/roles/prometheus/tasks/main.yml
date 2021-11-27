@@ -1,0 +1,89 @@
+---
+# - name: Copy config
+#   template:
+#     src: prometheus.yml
+#     dest: /tmp/prometheus2.yml
+
+# - name: Create prometheus container
+#   docker_container:
+#     name: prometheus
+#     image: "prom/prometheus"
+#     pull: yes
+#     state: started
+#     volumes:
+#       - "/tmp/prometheus2.yml:/tmp2/prometheus/prometheus.yml"
+#     command:
+#       - --config.file /tmp2/prometheus.yml
+
+- name: Create prometheus user group
+  group: name="{{groupId}}"
+  become: true
+
+- name: Create prometheus user
+  user:
+    name: "{{userId}}"
+    group: "{{groupId}}"
+    system: yes
+    shell: "/sbin/nologin"
+    comment: "{{userId}} nologin User"
+    createhome: "no"
+    state: present
+
+- name: Install prometheus
+  unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v{{ version }}/prometheus-{{ version }}.linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Copy prometheus file
+  copy:
+    src: "/tmp/prometheus-{{ version }}.linux-amd64/prometheus"
+    dest: "/usr/local/bin/prometheus"
+    owner: "{{userId}}"
+    group: "{{groupId}}"
+    remote_src: yes
+    mode: 0755
+
+- name: Delete tmp folder
+  file:
+    path: "/tmp/prometheus-{{ version }}.linux-amd64"
+    state: absent
+
+- name: Create directory for prometheus in data-folder
+  file:
+    path: "/data/prometheus/"
+    state: directory
+    owner: "{{userId}}"
+    group: "{{groupId}}"
+    mode: 0755
+
+- name: Create directory for prometheus in etc-folder
+  file:
+    path: "/etc/prometheus/"
+    state: directory
+    owner: "{{userId}}"
+    group: "{{groupId}}"
+    mode: 0755
+
+- name: Copy config file
+  template:
+    src: prometheus.conf.j2
+    dest: /etc/prometheus/prometheus.yml
+
+- name: Copy init file
+  template:
+    src: init.service.j2
+    dest: /etc/systemd/system/prometheus.service
+  notify: systemd_reload
+
+- name: Start prometheus
+  service:
+    name: prometheus
+    state: started
+    enabled: yes
+#--------------------------------------------------------
+# - name: Copy config to server
+#   template:
+#     src: prometheus.conf.j2
+#     dest: /tmp/
+#--------------------------------------------------------

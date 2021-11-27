@@ -1,0 +1,29 @@
+---
+- name: node_exporter
+  hosts: monitoring
+  become: true
+  become_method: sudo
+  remote_user: azureuser
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - node_exporter
+- name: prometheus
+  hosts: monitoring
+  become: true
+  become_method: sudo
+  remote_user: azureuser
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - prometheus
+- name: grafana
+  hosts: monitoring
+  become: true
+  become_method: sudo
+  remote_user: azureuser
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - grafana
+    - dashboards

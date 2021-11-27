@@ -1,0 +1,41 @@
+- name: Create db container
+  docker_container:
+    name: dbserver
+    image: "mysql:5.7"
+    restart: true
+    ports:
+      - "3306:3306"
+    env:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: microblog
+      MYSQL_USER: microblog
+      MYSQL_PASSWORD: secret
+      container_default_behavior: "compatibility"
+
+- name: Copy file to VM
+  copy:
+    src: ~/dbwebb/sql/database.sql
+    dest: /tmp/database.sql
+
+- name: Set up user for exporter
+  shell: docker exec -i dbserver mysql -uroot -p"{{ pass_mysql }}" < /tmp/database.sql
+  ignore_errors: yes
+
+- name: Run mysql-exporter
+  docker_container:
+    name: "mysql-exporter"
+    image: prom/mysqld-exporter:latest
+    pull: yes
+    state: started
+    restart_policy: always
+    network_mode: host
+    env:
+      DATA_SOURCE_NAME: "exporter:logijami@(localhost:3306)/"
+    command:
+      [
+        "--collect.auto_increment.columns",
+        "--collect.binlog_size",
+        "--collect.engine_innodb_status",
+        "--collect.engine_tokudb_status",
+        "--collect.global_status",
+      ]
