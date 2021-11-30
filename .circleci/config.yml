@@ -77,7 +77,7 @@ jobs:
           command: ansible-playbook ansible/gather_vm_instances.yml ansible/appServer.yml
   snyk:
     docker:
-      - image: circleci/python:3.5
+      - image: circleci/python:3.8
     working_directory: ~/repo
     steps:
       - checkout
