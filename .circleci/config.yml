@@ -58,6 +58,7 @@ jobs:
             docker push $IMAGE_NAME:latest
       - snyk/scan:
           docker-image-name: $IMAGE_NAME
+          additional-arguments: "--policy-path=.snyk"
   ansible:
     executor: docker-publisher
     steps:
