@@ -156,6 +156,13 @@ test: validate exec-tests
 
 
 
+# target: bandit                         - Run bandit
+.PHONY: bandit
+bandit:
+	bandit -r app
+
+
+
 ## target: test-html                    - Run tests and display detailed code coverage with html
 .PHONY: test-html
 test-html: exec-tests
