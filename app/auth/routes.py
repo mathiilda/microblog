@@ -68,12 +68,14 @@ def logout():
 
 @bp.route('/sitemap.xml')
 def static_from_root_sitemap():
+    """
+    Route for sitemap.xml
+    """
     return send_from_directory('static', "sitemap.xml")
 
 @bp.route('/robots.txt')
 def static_from_root_robot():
+    """
+    Route for robots.txt
+    """
     return send_from_directory('static', "robots.txt")
-# @bp.route('/robots.txt')
-# @bp.route('/sitemap.xml')
-# def static_from_root():
-#     return send_from_directory(bp.static_folder, request.path[1:])
