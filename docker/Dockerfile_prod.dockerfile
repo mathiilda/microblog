@@ -5,6 +5,7 @@ WORKDIR /home/microblog
 
 # COPY . .
 COPY app app
+COPY app/static app/static
 COPY migrations migrations
 COPY requirements requirements
 COPY requirements.txt microblog.py boot.sh ./

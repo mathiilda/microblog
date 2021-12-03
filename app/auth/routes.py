@@ -1,7 +1,7 @@
 """
 Contains routes used for authenticating User
 """
-from flask import render_template, redirect, url_for, flash, request, current_app
+from flask import render_template, redirect, url_for, flash, request, current_app, send_from_directory
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user
 from app import db
@@ -65,3 +65,15 @@ def logout():
     current_app.logger.debug(f"{current_user} loged out")
     logout_user()
     return redirect(url_for('main.index'))
+
+@bp.route('/sitemap.xml')
+def static_from_root_sitemap():
+    return send_from_directory('static', "sitemap.xml")
+
+@bp.route('/robots.txt')
+def static_from_root_robot():
+    return send_from_directory('static', "robots.txt")
+# @bp.route('/robots.txt')
+# @bp.route('/sitemap.xml')
+# def static_from_root():
+#     return send_from_directory(bp.static_folder, request.path[1:])

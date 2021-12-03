@@ -8,3 +8,5 @@
     - azure.azcollection
   roles:
     - provision_instances
+    - gather_vm_instances
+    - security_groups

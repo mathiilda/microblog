@@ -8,6 +8,7 @@ loadBalancer-copy.yml
 ansible/group_vars/devops.yml
 ansible/group_vars/all.yml
 ansible/roles/prometheus_copy
+skrap
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
