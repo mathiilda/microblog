@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microblog
+spec:
+  selector:
+    matchLabels:
+      app: microblog
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: microblog
+    spec:
+      containers:
+        - image: mathilda17/microblog:flask-exporter
+          imagePullPolicy: Always
+          name: microblog
+          resources:
+            requests:
+              cpu: 250m
+            limits:
+              cpu: 500m
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+          env:
+            - name: SECRET_KEY
+              value: "secret"
+            - name: DATABASE_URL
+              value: "mysql+pymysql://microblog:secret@mysql:3306/microblog"
+            - name: container_default_behavior
+              value: "compatibility"
+            - name: MYSQL_HOST
+              value: "mysql"
